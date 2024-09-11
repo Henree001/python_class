@@ -24,21 +24,57 @@ def handle_message(message):
     bot.send_message(message.chat.id, f"{quiz[count]['question']}\n a. {quiz[count]['options']['a']}\n b. {quiz[count]['options']['b']}\n c. {quiz[count]['options']['c']}\n d. {quiz[count]['options']['d']}")
 
 
-def answer(message):
-    text_in_small_letters = message.text.lower()
-    return text_in_small_letters == "c"
+def check_invalid_option(message):
+    valid_options = ['a', 'b', 'c', 'd']
+    return  message.text.lower() not in valid_options
 
-@bot.message_handler(func=answer)
+    # text_in_small_letters = message.text.lower()
+    # return text_in_small_letters == "c"
+    # match count:
+    #     case 0:
+    #         if message.text.lower() == "c":
+    #             return True
+    #         else:
+    #             return False
+    #     case 1:
+    #         if message.text.lower() == "c":
+    #             return True
+    #         else:
+    #             return False
+    #     case 2:
+    #         if message.text.lower() == "b":
+    #             return True
+    #         else:
+    #             return False
+
+
+@bot.message_handler(func=check_invalid_option)
 def handle_message(message):
-    global count
-    count += 1
-    bot.send_message(message.chat.id, "Correct answer!")
+    bot.send_message(message.chat.id, 'Wrong input, please select a valid option')
     bot.send_message(message.chat.id, f"{quiz[count]['question']}\n a. {quiz[count]['options']['a']}\n b. {quiz[count]['options']['b']}\n c. {quiz[count]['options']['c']}\n d. {quiz[count]['options']['d']}")
 
 
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
-    bot.send_message(message.chat.id, 'Wrong input, please select a valid option')
+    global count
+    try:
+        if quiz[count]["answer"] == message.text.lower():
+            bot.send_message(message.chat.id, "Correct answer!")
+        else:
+            bot.send_message(message.chat.id, "Wrong answer!")
+
+        count += 1
+        if count > 9:
+            bot.send_message(message.chat.id, "Your score is 5/10")
+        else:
+            bot.send_message(
+                message.chat.id,
+                f"{quiz[count]['question']}\n a. {quiz[count]['options']['a']}\n b. {quiz[count]['options']['b']}\n c. {quiz[count]['options']['c']}\n d. {quiz[count]['options']['d']}",
+            )
+    except IndexError:
+        count = 0
+        bot.send_message(message.chat.id, "Quiz completed, type /start to retake quiz")
+
 
 bot.infinity_polling()
 
